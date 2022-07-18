@@ -29,13 +29,21 @@ var threads int
 func checkCDN(domain string) {
 	defer semaphore.Done()
 	// 域名处理，可能传入是URL
-	if strings.Contains(domain, "://") {
-		parse, err := url.Parse(domain)
-		if err != nil {
-			return
-		}
-		domain = parse.Hostname()
+	/*
+	非正常格式：需要先变成标准格式 www.baidu.com
+	https://www.baidu.com
+	1.2.3.4:80
+	www.baidu.com:443
+	 */
+	if !strings.HasPrefix(domain, "http") {
+		domain = "http://" + domain
 	}
+
+	parse, err := url.Parse(domain)
+	if err != nil {
+		return
+	}
+	domain = parse.Hostname()
 
 	// 域名解析成IP，可能有多个IP
 	ips, err := net.LookupIP(domain)
