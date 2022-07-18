@@ -8,6 +8,7 @@ import (
 	"github.com/projectdiscovery/cdncheck"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -27,6 +28,15 @@ var threads int
 
 func checkCDN(domain string) {
 	defer semaphore.Done()
+	// 域名处理，可能传入是URL
+	if strings.Contains(domain, "://") {
+		parse, err := url.Parse(domain)
+		if err != nil {
+			return
+		}
+		domain = parse.Hostname()
+	}
+
 	// 域名解析成IP，可能有多个IP
 	ips, err := net.LookupIP(domain)
 	if err != nil {
