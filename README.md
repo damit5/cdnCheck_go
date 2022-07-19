@@ -6,6 +6,10 @@
 
 ## 安装编译
 
+> **重要：**
+>
+> 需要下载 [`GeoLite2-ASN.mmdb`](https://github.com/damit5/cdnCheck_go/raw/main/GeoLite2-ASN.mmdb) 放到执行目录下，`cdnCheck_go`会自动从运行目录读取该mmdb文件
+
 ### 最简单
 
 前往[release页面](https://github.com/damit5/cdnCheck_go/releases)下载对应版本
