@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/EDDYCJY/gsema"
+	"github.com/damit5/cdnCheck_go/util"
 	"github.com/projectdiscovery/cdncheck"
 	"log"
 	"net"
@@ -44,6 +45,14 @@ func checkCDN(domain string) {
 		return
 	}
 	domain = parse.Hostname()
+	// URL处理完成，全部都是 www.baidu.com 这种格式
+
+	// 先走本地CDN CNAME检查
+	if found := util.CheckCNAME(domain); found {
+		log.Println(fmt.Sprintf("%s has cname cdn", domain))
+		cdnResult = append(cdnResult, domain)
+		return
+	}
 
 	// 域名解析成IP，可能有多个IP
 	ips, err := net.LookupIP(domain)
@@ -52,22 +61,34 @@ func checkCDN(domain string) {
 		return
 	}
 
-	// 进行CDN验证
+	// 进行多种方法的CDN验证
 	for _, ip := range ips {
 		// 过滤ipv6
 		if strings.Contains(ip.String(), ":") {
 			continue
 		}
 
+		// 1. projectdiscover库
 		if found, provider, err := client.Check(ip); found && err == nil {
 			log.Println(fmt.Sprintf("%s ==> %s is part of %s cdn", domain, ip.String(), provider))
-
 			cdnResult = append(cdnResult, domain)
 		} else {
-			log.Println(fmt.Sprintf("%s ==> %s has no cdn", domain, ip.String()))
+			// 2. ip cidr
+			if found := util.CheckCIDR(ip); found {
+				log.Println(fmt.Sprintf("%s ==> %s has cidr cdn", domain, ip.String()))
+				cdnResult = append(cdnResult, domain)
+			} else {
+				// 3. ip asn
+				if found := util.CheckASN(ip); found {
+					log.Println(fmt.Sprintf("%s ==> %s has asn cdn", domain, ip.String()))
+					cdnResult = append(cdnResult, domain)
+				} else {
+					log.Println(fmt.Sprintf("%s ==> %s has no cdn", domain, ip.String()))
 
-			nonCdnDomainResult = append(nonCdnDomainResult, domain)
-			nonCdnIPResult = append(nonCdnIPResult, ip.String())
+					nonCdnDomainResult = append(nonCdnDomainResult, domain)
+					nonCdnIPResult = append(nonCdnIPResult, ip.String())
+				}
+			}
 		}
 	}
 }
