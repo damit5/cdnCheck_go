@@ -1,8 +1,14 @@
+![cdnCheck_go](https://socialify.git.ci/damit5/cdnCheck_go/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Circuit%20Board&stargazers=1&theme=Light)
+
 ## 介绍
 
-使用`github.com/projectdiscovery/cdncheck`来快速判断是否存在CDN
+使用`github.com/projectdiscovery/cdncheck`、`ASN`、`CIDR`、`CNAME`来快速批量判断目标是否存在CDN，并可保存不存在CDN的域名和IP。
 
 ## 安装编译
+
+### 最简单
+
+前往[release页面](https://github.com/damit5/cdnCheck_go/releases)下载对应版本
 
 ### 自动
 
@@ -17,10 +23,7 @@ go install github.com/damit5/cdnCheck_go@latest
 ```shell
 git clone https://github.com/damit5/cdnCheck_go
 cd cdnCheck_go
-
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o release/cdnCheck_go_linux_amd64
-GOOS=darwin CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o release/cdnCheck_darwin
-GOOS=windows CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o release/cdnCheck.exe
+goreleaser build
 ```
 
 ## 用法
