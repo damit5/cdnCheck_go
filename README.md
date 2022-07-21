@@ -8,7 +8,7 @@
 
 > **重要：**
 >
-> ~~需要下载 [`GeoLite2-ASN.mmdb`](https://github.com/damit5/cdnCheck_go/raw/main/GeoLite2-ASN.mmdb) 放到执行目录下，`cdnCheck_go`会自动从运行目录读取该mmdb文件~~ （已内嵌到文件中，无需单独下载）
+> ~~需要下载 `GeoLite2-ASN.mmdb` 放到执行目录下，`cdnCheck_go`会自动从运行目录读取该mmdb文件~~ （已内嵌到文件中，无需单独下载）
 
 ### 最简单
 
