@@ -1,9 +1,9 @@
 package util
 
 import (
+	_ "embed"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/wxnacy/wgo/arrays"
-	"log"
 	"net"
 	"strings"
 )
@@ -35,8 +35,11 @@ var (
 var DB *geoip2.Reader
 var err error
 
+//go:embed GeoLite2-ASN.mmdb
+var getlite2_asn []byte
+
 func init() {
-	DB, err = geoip2.Open("GeoLite2-ASN.mmdb")
+	DB, err = geoip2.FromBytes(getlite2_asn)
 	if err != nil {
 		return 
 	}
@@ -81,18 +84,13 @@ func CheckCIDR(ip net.IP) bool {
 // https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
 func CheckASN(ip net.IP) bool {
 	found := false
-	if DB != nil {
-		asn, err := DB.ASN(ip)
-		if err != nil {
-			return false
-		}
-		contains := arrays.Contains(ASNS, asn.AutonomousSystemNumber)
-		if contains != -1 {
-			found = true
-		}
-	} else {
-		// DB == nil ，没读取到文件
-		log.Println("无 GeoLite2-ASN.mmdb 文件，请下载并放置到cdncheck_go同目录下，否则将忽略此判断！")
+	asn, err := DB.ASN(ip)
+	if err != nil {
+		return false
+	}
+	contains := arrays.Contains(ASNS, asn.AutonomousSystemNumber)
+	if contains != -1 {
+		found = true
 	}
 	return found
 }
