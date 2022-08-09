@@ -20,11 +20,13 @@ var semaphore *gsema.Semaphore
 var cdnResult []string	// 保存CDN的域名
 var nonCdnDomainResult []string // 保存无CDN的域名
 var nonCdnIPResult []string	// 保存无CDN的IP
+var allDomainIP []string // 保存所有的域名解析的IP，不然可能找到IP的洞，但是不知道是哪个域名对过来的
 
 // 传入的参数
 var target string
 var nonCdnDomainSavePath string
 var nonCdnIPSavePath string
+var allDomainIPSavePath string
 var threads int
 
 func checkCDN(domain string) {
@@ -60,6 +62,7 @@ func checkCDN(domain string) {
 		log.Println(domain, err)
 		return
 	}
+	allDomainIP = append(allDomainIP, fmt.Sprintf("%s ==> %v", domain, ips))
 
 	// 进行多种方法的CDN验证
 	for _, ip := range ips {
@@ -115,6 +118,7 @@ func flagInit() {
 	flag.StringVar(&target, "t", "", "需要扫描的文件")
 	flag.StringVar(&nonCdnDomainSavePath, "nd", "", "无CDN域名保存地址，不保存置空即可")
 	flag.StringVar(&nonCdnIPSavePath, "ni", "", "无CDN IP保存地址，不保存置空即可")
+	flag.StringVar(&allDomainIPSavePath, "as", "", "所有域名和IP的映射关系，不保存置空即可")
 	flag.IntVar(&threads, "thread", 20, "并发数")
 	flag.Parse()
 }
@@ -161,6 +165,16 @@ func main() {
 		write := bufio.NewWriter(openFile)
 		for _, ip := range removeRepeatedElement(nonCdnIPResult) {
 			write.WriteString(ip + "\n")
+		}
+		write.Flush()
+	}
+
+	if allDomainIPSavePath != "" {
+		openFile, _ := os.OpenFile(allDomainIPSavePath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
+		defer openFile.Close()
+		write := bufio.NewWriter(openFile)
+		for _, ipdomain := range removeRepeatedElement(allDomainIP) {
+			write.WriteString(ipdomain + "\n")
 		}
 		write.Flush()
 	}
