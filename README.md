@@ -4,6 +4,10 @@
 
 使用`github.com/projectdiscovery/cdncheck`、`ASN`、`CIDR`、`CNAME`来快速批量判断目标是否存在CDN，并可保存不存在CDN的域名和IP。
 
+## 更新记录
+
+* 2023/12/21 修复projectdiscovery更新导致的不兼容问题，更新了CIDR、CNAME范围，为代码增加了部分注释
+
 ## 安装编译
 
 > **重要：**

@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
+// 全局变量
 var client *cdncheck.Client
-var err error
 var semaphore *gsema.Semaphore
 var cdnResult []string	// 保存CDN的域名
 var nonCdnDomainResult []string // 保存无CDN的域名
@@ -72,7 +72,7 @@ func checkCDN(domain string) {
 		}
 
 		// 1. projectdiscover库
-		if found, provider, err := client.Check(ip); found && err == nil {
+		if found, provider, err := client.CheckCDN(ip); found && err == nil {
 			log.Println(fmt.Sprintf("%s ==> %s is part of %s cdn", domain, ip.String(), provider))
 			cdnResult = append(cdnResult, domain)
 		} else {
@@ -124,17 +124,16 @@ func flagInit() {
 }
 
 func main() {
+	// 参数初始化
 	flagInit()
 	if target == "" {
 		flag.Usage()
 		return
 	}
+	// 多线程
 	semaphore = gsema.NewSemaphore(threads)
-	client, err = cdncheck.NewWithCache()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	client = cdncheck.New()
+	// 文件读取
 	file, err := os.Open(target)
 	defer file.Close()
 	if err != nil {

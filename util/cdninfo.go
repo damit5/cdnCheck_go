@@ -2,22 +2,18 @@ package util
 
 import (
 	_ "embed"
+	"encoding/json"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/wxnacy/wgo/arrays"
 	"net"
+	"reflect"
 	"strings"
 )
 
+// 初始化变量
 var (
-	ALL_CNAME = []string {
-		"cdn-cdn.net", "fwdns.net", "bitgravity.com", "21okglb.cn", "kxcdn", "fastwebcdn.com", "cachefly.net", "simplecdn.net", "tbcache.com", "footprint.net", "cloudflare.net", "51cdn.com", "google.", "bluehatnetwork.com", "hadns.net", "incapdns", "skyparkcdn", "akamai", "hwcdn", "cdn77.org", "aicdn.com", "akamaitechnologies.com", "fastly", "fpbns", "cdn77.net", "zenedge.net", "akadns.net", "customcdn.com", "fastly.net", "lswcdn", "googleusercontent.com", "mncdn.com", "21speedcdn.com", "hiberniacdn.com", "mirror-image.net", "anankecdn.com.br", "cncssr.chinacache.net", "hichina.net", "insnw.net", "jiashule.com", "llnwd", "cdn.dnsv1.com", "bitgravity", "mwcloudcdn.com", "amazonaws.com", "systemcdn.net", "wscdns.com", "cdnvideo", "ccgslb", "fpbns.net", "dnsv1", "360wzb.com", "inscname.net", "ytcdn.net", "21vokglb.cn", "aliyuncs.com", "cdntip", "netdna-ssl.com", "att-dsa.net", "tcdn.qq.com", "netdna", "ccgslb.com.cn", "netdna.com", "l.doubleclick.net", "chinaidns.net", "turbobytes-cdn.com", "instacontent.net", "speedcdns", "clients.turbobytes.net", "akamai-staging.net", "fastcdn.cn", "wscloudcdn", "gslb.taobao.com", "hichina.com", "fastcache.com", "cachecn.com", "verygslb.com", "cdnzz.net", "fwcdn.com", "kunlunca.com", "cdn.cloudflare.net", "customcdn.cn", "vo.llnwd.net", "swiftserve.com", "lldns.net", "afxcdn.net", "ourwebpic.com", "edgekey", "ucloud.cn", "cdn20.com", "swiftcdn1.com", "cdn77", "azioncdn.net", "akamaized.net", "cdnvideo.ru", "incapdns.net", "tlgslb.com", "kunlun.com", "cloudflare.com", "anankecdn", "cdnudns.com", "footprint", "txnetworks.cn", "akamai.com", "cdnsun.net", "wpc.", "qiniudns.com", "okglb.com", "cloudflare", "ngenix", "cloudfront", "belugacdn.com", "edgecast", "cdnsun.net.", "alicdn.com", "cdn.telefonica.com", "lxdns.com", "internapcdn.net", "ewcache.com", "llnwd.net", "c3cdn.net", "chinacache.net", "21vianet.com.cn", "qingcdn.com", "yunjiasu-cdn", "cdn.ngenix.net", "skyparkcdn.net", "ccgslb.com", "adn.", "presscdn", "panthercdn.com", "edgecastcdn.net", "ay1.b.yahoo.com", "alicloudsec.com", "cachefly", "kunlunar.com", "bdydns.com", "cloudfront.net", "acadn.com", "cap-mii.net", "gslb.tbcache.com", "awsdns", "cdn.bitgravity.com", "cdnify.io", "kxcdn.com", "00cdn.com", "cdnetworks.net", "fastweb.com", "googlesyndication.", "akamaitech.net", "presscdn.com", "cdnetworks", "cdntip.com", "cdnify", "hacdn.net", "azureedge.net", "alicloudlayer.com", "internapcdn", "speedcdns.com", "cdnsun", "cdngc.net", "gccdn.net", "fastlylb.net", "cdnnetworks.com", "mwcloudcdn", "21cvcdn.com", "ccgslb.net", "azioncdn", "wac.", "unicache.com", "vo.msecnd.net", "stackpathdns.com", "lswcdn.net", "dnspao.com", "akamai.net", "azureedge", "aodianyun.com", "dnion.com", "wscloudcdn.com", "ourwebcdn.net", "netdna-cdn.com", "chinacache", "c3cache.net", "aliyun-inc.com", "sprycdn.com", "hwcdn.net", "yimg.", "telefonica", "aqb.so", "alikunlun.com", "chinanetcenter.com", "cloudcdn.net", "xgslb.net", "gccdn.cn", "globalcdn.cn", "lxcdn.com", "rncdn1.com", "youtube.", "txcdn.cn", "edgesuite.net", "okcdn.com", "akamaiedge.net",
-		"jiashule", "jiasule",
-	}
-	
-	CDN_CIDR = []string {
-		"223.99.255.0/24", "71.152.0.0/17", "219.153.73.0/24", "125.39.46.0/24", "190.93.240.0/20", "14.0.113.0/24", "14.0.47.0/24", "113.20.148.0/22", "103.75.201.0/24", "1.32.239.0/24", "101.79.239.0/24", "52.46.0.0/18", "125.88.189.0/24", "150.138.248.0/24", "180.153.235.0/24", "205.251.252.0/23", "103.1.65.0/24", "115.127.227.0/24", "14.0.42.0/24", "109.199.58.0/24", "116.211.155.0/24", "112.253.3.0/24", "14.0.58.0/24", "223.112.227.0/24", "113.20.150.0/23", "61.182.141.0/24", "34.216.51.0/25", "124.95.188.0/24", "42.51.25.0/24", "183.136.133.0/24", "52.220.191.0/26", "119.84.93.0/24", "182.118.38.0/24", "13.59.250.0/26", "54.178.75.0/24", "119.84.92.0/24", "183.131.62.0/24", "111.32.136.0/24", "13.124.199.0/24", "111.47.227.0/24", "104.37.177.0/24", "14.0.50.0/24", "183.230.70.0/24", "114.111.59.0/24", "220.181.135.0/24", "112.140.32.0/19", "101.79.230.0/24", "14.0.115.0/24", "103.28.248.0/22", "117.34.72.0/24", "109.199.57.0/24", "101.79.149.0/24", "116.128.128.0/24", "115.231.186.0/24", "103.22.200.0/22", "61.155.165.0/24", "113.20.148.0/23", "185.254.242.0/24", "59.36.120.0/24", "70.132.0.0/18", "116.31.126.0/24", "119.147.134.0/24", "115.127.246.0/24", "52.47.139.0/24", "118.107.175.0/24", "52.78.247.128/26", "110.93.176.0/20", "54.240.128.0/18", "46.51.216.0/21", "119.31.251.0/24", "125.39.18.0/24", "108.175.33.0/24", "1.31.128.0/24", "61.151.163.0/24", "103.95.132.0/24", "58.215.118.0/24", "54.233.255.128/26", "120.52.113.0/24", "118.107.174.0/24", "1.32.242.0/24", "221.195.34.0/24", "101.79.228.0/24", "205.251.249.0/24", "113.200.91.0/24", "101.79.146.0/24", "221.238.22.0/24", "134.19.183.0/24", "110.93.160.0/20", "180.97.158.0/24", "115.127.251.0/24", "119.167.147.0/24", "115.127.238.0/24", "115.127.240.0/22", "14.0.48.0/24", "115.127.240.0/24", "113.7.183.0/24", "112.140.128.0/20", "115.127.255.0/24", "114.31.36.0/22", "101.79.232.0/24", "218.98.44.0/24", "106.119.182.0/24", "101.79.167.0/24", "125.39.5.0/24", "58.49.105.0/24", "124.202.164.0/24", "111.177.6.0/24", "61.133.127.0/24", "185.11.124.0/22", "150.138.150.0/24", "115.127.248.0/24", "103.74.80.0/22", "101.79.166.0/24", "101.71.55.0/24", "198.41.128.0/17", "117.21.219.0/24", "103.231.170.0/24", "221.204.202.0/24", "101.79.224.0/24", "112.25.16.0/24", "111.177.3.0/24", "204.246.168.0/22", "103.40.7.0/24", "134.226.0.0/16", "52.15.127.128/26", "122.190.2.0/24", "101.203.192.0/18", "1.32.238.0/24", "101.79.144.0/24", "176.34.28.0/24", "119.84.15.0/24", "18.216.170.128/25", "222.88.94.0/24", "101.79.150.0/24", "114.111.48.0/21", "124.95.168.0/24", "114.111.48.0/20", "110.93.176.0/21", "223.111.127.0/24", "117.23.61.0/24", "140.207.120.0/24", "157.255.26.0/24", "221.204.14.0/24", "183.222.96.0/24", "104.37.180.0/24", "42.236.93.0/24", "111.63.51.0/24", "114.31.32.0/20", "118.180.50.0/24", "222.240.184.0/24", "205.251.192.0/19", "101.79.225.0/24", "115.127.228.0/24", "113.20.148.0/24", "61.213.176.0/24", "112.65.75.0/24", "111.13.147.0/24", "113.20.145.0/24", "103.253.132.0/24", "52.222.128.0/17", "183.203.7.0/24", "27.221.27.0/24", "103.79.134.0/24", "123.150.187.0/24", "103.15.194.0/24", "162.158.0.0/15", "61.163.30.0/24", "182.140.227.0/24", "112.25.60.0/24", "117.148.161.0/24", "61.182.136.0/24", "114.31.56.0/22", "64.252.128.0/18", "183.61.185.0/24", "115.127.250.0/24", "150.138.138.0/24", "13.210.67.128/26", "211.162.64.0/24", "61.174.9.0/24", "14.0.112.0/24", "52.52.191.128/26", "27.221.124.0/24", "103.4.203.0/24", "103.14.10.0/24", "34.232.163.208/29", "114.31.48.0/20", "59.51.81.0/24", "183.60.235.0/24", "101.227.206.0/24", "125.39.174.0/24", "119.167.246.0/24", "118.107.160.0/21", "223.166.151.0/24", "110.93.160.0/19", "204.246.172.0/23", "119.31.253.0/24", "143.204.0.0/16", "14.0.60.0/24", "123.151.76.0/24", "116.193.80.0/24", "120.241.102.0/24", "180.96.20.0/24", "216.137.32.0/19", "223.94.95.0/24", "103.4.201.0/24", "14.0.56.0/24", "115.127.234.0/24", "113.20.144.0/23", "103.248.104.0/24", "122.143.15.0/24", "101.79.229.0/24", "101.79.163.0/24", "104.37.112.0/22", "115.127.253.0/24", "141.101.64.0/18", "113.20.144.0/22", "101.79.155.0/24", "117.148.160.0/24", "124.193.166.0/24", "109.94.168.0/24", "203.90.247.0/24", "101.79.208.0/21", "182.118.12.0/24", "114.31.58.0/23", "202.162.109.0/24", "101.79.164.0/24", "58.216.2.0/24", "222.216.190.0/24", "101.79.165.0/24", "111.6.191.0/24", "1.255.100.0/24", "52.84.0.0/15", "112.65.74.0/24", "183.250.179.0/24", "101.79.236.0/24", "119.31.252.0/24", "113.20.150.0/24", "60.12.166.0/24", "101.79.234.0/24", "113.17.174.0/24", "101.79.237.0/24", "61.54.46.0/24", "118.212.233.0/24", "183.110.242.0/24", "150.138.149.0/24", "117.34.13.0/24", "115.127.245.0/24", "14.0.102.0/24", "14.0.109.0/24", "61.130.28.0/24", "113.20.151.0/24", "219.159.84.0/24", "114.111.62.0/24", "172.64.0.0/13", "61.155.222.0/24", "120.52.29.0/24", "115.127.231.0/24", "14.0.49.0/24", "113.202.0.0/16", "103.248.104.0/22", "205.251.250.0/23", "103.216.136.0/22", "118.107.160.0/20", "109.87.0.0/21", "54.239.128.0/18", "115.127.224.0/19", "111.202.98.0/24", "109.94.169.0/24", "59.38.112.0/24", "204.246.176.0/20", "123.133.84.0/24", "103.4.200.0/24", "111.161.109.0/24", "112.84.34.0/24", "103.82.129.0/24", "183.3.254.0/24", "112.137.184.0/21", "122.227.237.0/24", "36.42.75.0/24", "13.35.0.0/16", "101.226.4.0/24", "116.140.35.0/24", "58.250.143.0/24", "13.54.63.128/26", "205.251.254.0/24", "173.245.48.0/20", "183.61.177.0/24", "113.20.144.0/24", "104.37.183.0/24", "35.158.136.0/24", "116.211.121.0/24", "42.236.94.0/24", "117.34.91.0/24", "123.6.13.0/24", "13.224.0.0/14", "113.20.146.0/24", "58.58.81.0/24", "52.124.128.0/17", "122.228.198.0/24", "197.234.240.0/22", "99.86.0.0/16", "144.220.0.0/16", "119.188.97.0/24", "36.27.212.0/24", "104.37.178.0/24", "114.31.52.0/22", "218.65.212.0/24", "1.255.41.0/24", "14.0.45.0/24", "1.32.243.0/24", "220.170.185.0/24", "122.190.3.0/24", "103.79.133.0/24", "220.181.55.0/24", "125.39.191.0/24", "115.127.226.0/24", "125.39.32.0/24", "61.120.154.0/24", "103.4.202.0/24", "103.79.134.0/23", "115.127.224.0/24", "113.20.147.0/24", "61.156.149.0/24", "210.209.122.0/24", "115.127.249.0/24", "104.37.179.0/24", "120.52.18.0/24", "54.192.0.0/16", "14.0.55.0/24", "61.160.224.0/24", "113.207.101.0/24", "101.79.157.0/24", "110.93.128.0/20", "58.251.121.0/24", "61.240.149.0/24", "130.176.0.0/16", "113.107.238.0/24", "112.65.73.0/24", "103.75.200.0/23", "199.83.128.0/21", "123.129.220.0/24", "54.230.0.0/16", "114.111.60.0/24", "199.27.128.0/21", "14.0.118.0/24", "101.79.158.0/24", "119.31.248.0/21", "54.182.0.0/16", "113.31.27.0/24", "14.17.69.0/24", "101.79.145.0/24", "113.20.144.0/21", "180.163.22.0/24", "104.37.176.0/21", "117.25.156.0/24", "115.127.252.0/24", "115.127.244.0/23", "14.0.46.0/24", "113.207.102.0/24", "52.199.127.192/26", "13.113.203.0/24", "64.252.64.0/18", "1.32.240.0/24", "123.129.232.0/24", "1.32.241.0/24", "180.163.189.0/24", "157.255.25.0/24", "1.32.244.0/24", "103.248.106.0/24", "121.48.95.0/24", "54.239.192.0/19", "113.20.146.0/23", "61.136.173.0/24", "35.162.63.192/26", "117.34.14.0/24", "183.232.29.0/24", "42.81.93.0/24", "122.228.238.0/24", "183.61.190.0/24", "125.39.239.0/24", "115.127.230.0/24", "103.140.200.0/23", "202.102.85.0/24", "14.0.32.0/21", "14.0.57.0/24", "112.25.90.0/24", "58.211.137.0/24", "210.22.63.0/24", "34.226.14.0/24", "13.32.0.0/15", "101.79.156.0/24", "103.89.176.0/24", "14.0.116.0/24", "106.42.25.0/24", "101.79.233.0/24", "101.79.231.0/24", "103.75.200.0/24", "119.188.9.0/24", "183.232.51.0/24", "149.126.72.0/21", "103.21.244.0/22", "115.127.233.0/24", "27.221.20.0/24", "198.143.32.0/19", "103.248.107.0/24", "101.79.227.0/24", "115.127.242.0/24", "119.31.250.0/24", "103.82.130.0/24", "99.84.0.0/16", "222.73.144.0/24", "103.79.132.0/22", "101.79.208.0/20", "104.37.182.0/24", "101.79.152.0/24", "36.99.18.0/24", "101.71.56.0/24", "36.250.5.0/24", "61.158.240.0/24", "119.188.14.0/24", "13.249.0.0/16", "183.214.156.0/24", "60.221.236.0/24", "58.30.212.0/24", "115.127.254.0/24", "188.114.96.0/20", "115.127.241.0/24", "103.4.200.0/22", "115.127.239.0/24", "115.127.243.0/24", "111.32.135.0/24", "120.221.29.0/24", "115.127.232.0/24", "14.0.43.0/24", "14.0.59.0/24", "183.61.236.0/24", "34.223.12.224/27", "103.24.120.0/24", "52.57.254.0/24", "113.207.100.0/24", "222.186.19.0/24", "113.20.149.0/24", "150.138.151.0/24", "115.231.110.0/24", "52.56.127.0/25", "104.37.176.0/24", "163.177.8.0/24", "163.53.89.0/24", "52.82.128.0/19", "114.111.63.0/24", "108.162.192.0/18", "14.136.130.0/24", "115.127.229.0/24", "14.17.71.0/24", "52.212.248.0/26", "180.163.188.0/24", "61.182.137.0/24", "119.161.224.0/21", "14.0.41.0/24", "202.162.108.0/24", "106.122.248.0/24", "52.66.194.128/26", "115.127.237.0/24", "220.170.186.0/24", "14.0.32.0/19", "14.0.114.0/24", "112.90.216.0/24", "115.127.236.0/24", "116.193.84.0/24", "113.207.76.0/24", "101.79.235.0/24", "101.79.224.0/20", "61.155.149.0/24", "101.79.148.0/24", "180.163.224.0/24", "204.246.174.0/23", "183.60.136.0/24", "101.227.207.0/24", "103.248.105.0/24", "119.188.35.0/24", "42.236.7.0/24", "116.193.88.0/21", "116.193.83.0/24", "120.199.69.0/24", "122.226.182.0/24", "58.20.204.0/24", "110.93.128.0/21", "115.231.187.0/24", "69.28.58.0/24", "114.31.32.0/19", "112.25.91.0/24", "59.52.28.0/24", "117.27.149.0/24", "61.147.92.0/24", "14.0.117.0/24", "14.0.40.0/24", "119.97.151.0/24", "103.199.228.0/22", "122.70.134.0/24", "115.127.244.0/24", "223.112.198.0/24", "115.127.225.0/24", "104.16.0.0/12", "121.12.98.0/24", "103.31.4.0/22", "204.246.164.0/22", "223.94.66.0/24", "35.167.191.128/26", "116.31.127.0/24", "101.79.226.0/24", "34.195.252.0/24", "115.127.247.0/24", "61.240.144.0/24", "108.175.32.0/20", "120.197.85.0/24", "183.232.53.0/24", "111.161.66.0/24", "117.34.28.0/24", "45.64.64.0/22", "14.0.44.0/24", "109.86.0.0/15", "182.23.211.0/24", "58.211.2.0/24", "119.36.164.0/24", "116.55.250.0/24", "101.227.163.0/24", "13.228.69.0/24", "131.0.72.0/22", "120.221.136.0/24", "119.188.132.0/24", "115.127.235.0/24", "42.236.6.0/24", "125.88.190.0/24", "61.54.47.0/24", "103.27.12.0/22", "116.193.80.0/21", "101.79.159.0/24", "123.155.158.0/24", "111.47.226.0/24", "192.230.64.0/18", "107.154.0.0/16", "45.223.0.0/16", "45.60.0.0/16",
-	}
-
+	ALL_CNAME []string
+	CDN_CIDR []string
 	ASNS = []uint {
 		10576, 10762, 11748, 131099, 132601, 133496, 134409, 135295, 136764, 137187, 13777, 13890,
 		14103, 14520, 17132, 199251, 200013, 200325, 200856, 201263, 202294, 203075, 203139, 204248,
@@ -38,10 +34,230 @@ var err error
 //go:embed GeoLite2-ASN.mmdb
 var getlite2_asn []byte
 
+// 来源：https://raw.githubusercontent.com/mabangde/cdncheck_cn/main/sources_data.json
+//go:embed sources_data.json
+var data string
+
 func init() {
 	DB, err = geoip2.FromBytes(getlite2_asn)
 	if err != nil {
 		return 
+	}
+
+	// 定义JSON结构
+	type DataStruct struct {
+		CDN struct{
+			Baidu      []string `json:"Baidu-加速乐"`
+			Cloudfront []string `json:"cloudfront"`
+			Fastly     []string `json:"fastly"`
+			Google     []string `json:"google"`
+			Leaseweb   []string `json:"leaseweb"`
+			Stackpath  []string `json:"stackpath"`
+			YunDun     []string `json:"云盾CDN"`
+			BaiDuZNY   []string `json:"百度智能云CDN"`
+			WangXiu    []string `json:"网宿 CDN"`
+			Wangshen   []string `json:"网神CDN"`
+			TencentYun []string `json:"腾讯云CDN"`
+			LanXun     []string `json:"蓝讯"`
+			Aliyun     []string `json:"阿里云 CDN"`
+		} `json:"cdn"`
+		WAF struct{
+			Akamai     []string `json:"akamai"`
+			Cloudflare []string `json:"cloudflare"`
+			Incapsula  []string `json:"incapsula"`
+		} `json:"waf"`
+		Common struct{
+			Qihoo360CdnOperatedByQihoo360 []string `json:"360 云 CDN (由奇安信运营)"`
+			Qihoo360CdnOperatedByQihoo3602 []string `json:"360 云 CDN (由奇虎 360 运营)"`
+			AttContentDeliveryNetwork     []string `json:"AT&T Content Delivery Network"`
+			AwsCloud                       []string `json:"AWS Cloud"`
+			AwsCloudFront                  []string `json:"AWS CloudFront"`
+			AkamaiCdn                      []string `json:"Akamai CDN"`
+			AzionTechEdgeComputingPlatform []string `json:"Azion Tech | Edge Computing Platform"`
+			BaiduJiasule                    []string `json:"Baidu-加速乐"`
+			BelugaCDN                       []string `json:"BelugaCDN"`
+			BilibiliBusinessGSLB            []string `json:"Bilibili 业务 GSLB"`
+			BilibiliHighAvailabilityRegionLoadBalancing []string `json:"Bilibili 高可用地域负载均衡"`
+			BilibiliHighAvailabilityLoadBalancing    []string `json:"Bilibili 高可用负载均衡"`
+			BunnyCDN                               []string `json:"Bunny CDN"`
+			CDNDotNET                              []string `json:"CDN.NET"`
+			CDNDotNETCDNSUNONAPP                   []string `json:"CDN.NET / CDNSUN / ONAPP"`
+			CDN77                                  []string `json:"CDN77"`
+			CDNIFY                                 []string `json:"CDNIFY"`
+			CDNSUN                                 []string `json:"CDNSUN"`
+			CDNetworks                             []string `json:"CDNetworks"`
+			CacheFlyCDN                            []string `json:"CacheFly CDN"`
+			CedexisGSLB                            []string `json:"Cedexis GSLB"`
+			CedexisGSLBForChina                    []string `json:"Cedexis GSLB (For China)"`
+			CenturyLinkCDNOriginalLevel3           []string `json:"CenturyLink CDN (原 Level 3)"`
+			CloudXNS                               []string `json:"CloudXNS"`
+			Cloudflare                              []string `json:"Cloudflare"`
+			CodingPages                             []string `json:"Coding Pages"`
+			ConversantSwiftServeCDN                 []string `json:"Conversant - SwiftServe CDN"`
+			Fastly                                  []string `json:"Fastly"`
+			FlexBalancerSmartTrafficRouting          []string `json:"FlexBalancer - Smart Traffic Routing"`
+			GCoreLabs                               []string `json:"G - Core Labs"`
+			GitHubPages                              []string `json:"GitHub Pages"`
+			GitLabPages                              []string `json:"GitLab Pages"`
+			GoogleCloudStorage                       []string `json:"Google Cloud Storage"`
+			GoogleWebBusiness                        []string `json:"Google Web 业务"`
+			HerokuSaaS                                []string `json:"Heroku SaaS"`
+			IncapsulaCDN                             []string `json:"Incapsula CDN"`
+			InstartCDN                               []string `json:"Instart CDN"`
+			InternapCDN                              []string `json:"Internap CDN"`
+			KeyCDN                                   []string `json:"KeyCDN"`
+			LeaseWebCDN                              []string `json:"LeaseWeb CDN"`
+			LimelightNetwork                         []string `json:"Limelight Network"`
+			Medianova                                []string `json:"Medianova"`
+			MicrosoftAzure                           []string `json:"Microsoft Azure"`
+			MicrosoftAzureAppService                 []string `json:"Microsoft Azure App Service"`
+			MicrosoftAzureCDN                        []string `json:"Microsoft Azure CDN"`
+			MicrosoftAzureTrafficManager             []string `json:"Microsoft Azure Traffic Manager"`
+			Netlify                                  []string `json:"Netlify"`
+			NodeCache                                []string `json:"NodeCache"`
+			OracleDynWebApplicationSecuritySuite     []string `json:"Oracle Dyn Web Application Security suite (原 Zenedge CDN)"`
+			QUANTILNetEaseWangsu                     []string `json:"QUANTIL (网宿)"`
+			QUICCloud                                []string `json:"QUIC.Cloud"`
+			RelectedNetworks                         []string `json:"Relected Networks"`
+			SpeedyCloudCDN                          []string `json:"SpeedyCloud CDN"`
+			StackpathOriginalHighwinds              []string `json:"Stackpath (原 Highwinds)"`
+			StackpathOriginalMaxCDN                 []string `json:"Stackpath (原 MaxCDN)"`
+			StackpathCDN                             []string `json:"Stackpath CDN"`
+			StatusPageIO                             []string `json:"StatusPage.io"`
+			TAN14CDN                                []string `json:"TAN14 CDN"`
+			TataCommunicationsCDN                  []string `json:"Tata communications CDN"`
+			TurboBytesMultiCDN                     []string `json:"TurboBytes Multi-CDN"`
+			UCloudCDN                              []string `json:"UCloud CDN"`
+			UCloudRomeGlobalNetworkAcceleration    []string `json:"UCloud 罗马 Rome 全球网络加速"`
+			VerizonCDNEdgecast                     []string `json:"Verizon CDN (Edgecast)"`
+			VeryCloudCloudDistribution             []string `json:"VeryCloud 云分发"`
+			WebLukerBlueFlood                      []string `json:"WebLuker (蓝汛)"`
+			ZEITNowSmartCDN                        []string `json:"ZEIT Now Smart CDN"`
+			ZenlayerCDN                            []string `json:"Zenlayer CDN"`
+			Amazon                                 []string `json:"amazon"`
+			CloudflareCNAME                        []string `json:"cloudflare"`
+			Edgecast                               []string `json:"edgecast"`
+			FastlyCNAME                            []string `json:"fastly"`
+			Incapsula                              []string `json:"incapsula"`
+			MmTrixPerformanceMagicCube             []string `json:"mmTrix性能魔方（高升控股旗下）"`
+			QiniuCloud                             []string `json:"七牛云"`
+			ShanghaiYundunCDN                      []string `json:"上海云盾 CDN"`
+			CenturyInterconnectCloudExpressService []string `json:"世纪互联云快线业务"`
+			CenturyInterconnectShanghaiLanyunAzure []string `json:"世纪互联旗下上海蓝云（承载 Azure 中国）"`
+			ChinaTelecomTianyiCloudCDN             []string `json:"中国电信天翼云CDN"`
+			ZhonglianDataZhonglianLiXin            []string `json:"中联数据（中联利信）"`
+			YunfanAcceleratedCDN                   []string `json:"云帆加速CDN"`
+			CloudBrainFusionCDN                    []string `json:"云端智度融合 CDN"`
+			CloudBrainNetwork                        []string `json:"云端网络"`
+			JingdongCloudCDN                        []string `json:"京东云 CDN"`
+			YisuyunCDN                              []string `json:"亿速云 CDN"`
+			QuansuyunWangsuCloudEdgeCloudAcceleration []string `json:"全速云（网宿）CloudEdge 云加速"`
+			ChuangshiyunFusionCDN                    []string `json:"创世云融合 CDN"`
+			DonglizaixianCDN                         []string `json:"动力在线CDN"`
+			BeijingTongxingwandianNetworkTechnology []string `json:"北京同兴万点网络技术"`
+			HuaweiCloudCDN                          []string `json:"华为云 CDN"`
+			HuaweiCloudWAFHighDefenseShield         []string `json:"华为云WAF高防云盾"`
+			Youpaiyun                                []string `json:"又拍云"`
+			KuakeCloudCDN                            []string `json:"可靠云 CDN (贴图库)"`
+			QiAnXinWangshenCDN                      []string `json:"奇安信网神CDN"`
+			QiAnXinWebsiteGuard                     []string `json:"奇安信网站卫士"`
+			ByteDanceCDN                             []string `json:"字节跳动 CDN"`
+			ByteDanceSubsidiaryVolcanoEngine         []string `json:"字节跳动旗下火山引擎"`
+			AnhengXuanwuShieldWAF                    []string `json:"安恒玄武盾 （WAF）"`
+			BaotengHulianShanghaiWangenNetworkCDN    []string `json:"宝腾互联旗下上海万根网络（CDN 联盟）"`
+			BaotengHulianShanghaiWangenNetworkYaoCDN []string `json:"宝腾互联旗下上海万根网络（YaoCDN）"`
+			DilianCDN                                []string `json:"帝联 CDN"`
+			GuangdongWangdiCDN                       []string `json:"广东网堤CDN"`
+			KuaiwangCDN                              []string `json:"快网 CDN"`
+			SouhuYuntaiCDN                           []string `json:"搜狐云台CDN"`
+			NewLeShiYunLianCDN                       []string `json:"新乐视云联（原乐视云）CDN"`
+			New1CloudCDN                             []string `json:"新壹云-NEW1CLOUD"`
+			XinLiuYunCDN                             []string `json:"新流云（新流万联）"`
+			SinaCloudCDN                             []string `json:"新浪云 CDN"`
+			SinaCloudSAEEngine                       []string `json:"新浪云 SAE 云引擎"`
+			SinaTechFusionCDNLoadBalancer            []string `json:"新浪科技融合CDN负载均衡"`
+			SinaStaticDomain                         []string `json:"新浪静态域名"`
+			YiTongRuiJinAkamaiChinaByWangsu          []string `json:"易通锐进（Akamai 中国）由网宿承接"`
+			XingYuYunP2PCDN                          []string `json:"星域云P2P CDN"`
+			JiYuYunAnquanYiYun                       []string `json:"极御云安全（浙江壹云云计算有限公司）"`
+			JiSuDun                                  []string `json:"极速盾"`
+			ShenXinFuYunDun                          []string `json:"深信服云盾"`
+			NiuDunYunAnquan                          []string `json:"牛盾云安全"`
+			MaoYunRongHeCDN                          []string `json:"猫云融合 CDN"`
+			BaiShanYunCDN                            []string `json:"白山云 CDN"`
+			BaiduCloudCDN                                      []string `json:"百度云 CDN"`
+			BaiduCloudAcceleration                             []string `json:"百度云加速"`
+			BaiduSubsidiaryBusinessRegionalLoadBalancingSystem []string `json:"百度旗下业务地域负载均衡系统"`
+			BaiduIntelligentCloudCDN                           []string `json:"百度智能云CDN"`
+			KnownSecYunAnquanCDN                               []string `json:"知道创宇云安全 CDN"`
+			KnownSecYunAnquanChuangYuDunGovernment             []string `json:"知道创宇云安全创宇盾（政务专用）"`
+			KnownSecYunAnquanJiaSuLeCDN                        []string `json:"知道创宇云安全加速乐CDN"`
+			GreenShieldYunWAF                                  []string `json:"绿盟云 WAF"`
+			WangsuCDN                                          []string `json:"网宿 CDN"`
+			WangsuWAFCDN                                       []string `json:"网宿 WAF CDN"`
+			NetEaseCloudCDN                                    []string `json:"网易云 CDN"`
+			MeituanCloudCDN                                    []string `json:"美团云 CDN"`
+			MeituanCloudSanKuaiTechnologyLoadBalancer          []string `json:"美团云（三快科技）负载均衡"`
+			MeiChengHuiLianCDN                                 []string `json:"美橙互联CDN"`
+			MeiChengHuiLianSubsidiaryBuildStar                 []string `json:"美橙互联旗下建站之星"`
+			TengZhengAnQuanJiaSu15CDN                          []string `json:"腾正安全加速（原 15CDN）"`
+			TencentCloudAPIGateway                             []string `json:"腾讯云 API 网关"`
+			TencentCloudDDoSProtection                           []string `json:"腾讯云 DDoS 防护"`
+			TencentCloudCDN                                      []string `json:"腾讯云CDN"`
+			TencentCloudGlobalApplicationAcceleration            []string `json:"腾讯云全球应用加速"`
+			TencentCloudDaYuBGPHighDefense                       []string `json:"腾讯云大禹 BGP 高防"`
+			TencentCloudObjectStorage                            []string `json:"腾讯云对象存储"`
+			TencentCloudLiveCDN                                  []string `json:"腾讯云直播 CDN"`
+			TencentCloudVideoCDN                                 []string `json:"腾讯云视频 CDN"`
+			TencentSubsidiaryBusinessRegionalLoadBalancingSystem []string `json:"腾讯旗下业务地域负载均衡系统"`
+			LanXunCDN                                            []string `json:"蓝汛 CDN"`
+			LanDunYunCDN                                         []string `json:"蓝盾云CDN"`
+			LanShiYunCDN                                         []string `json:"蓝视云 CDN"`
+			AntFinancialSubsidiaryBusinessRegionalLoadBalancingSystem []string `json:"蚂蚁金服旗下业务地域负载均衡系统"`
+			ManManYunCDNZhongLianLiXin                                []string `json:"蛮蛮云 CDN（中联利信）"`
+			XiBuShuMa                                                 []string `json:"西部数码"`
+			XiBuShuMaCDN                                              []string `json:"西部数码CDN"`
+			YiYunKeJiYunJiaSuCDN                                      []string `json:"逸云科技云加速 CDN"`
+			JinShanYunCDN                                             []string `json:"金山云 CDN"`
+			RuiSuYunCDN                                               []string `json:"锐速云 CDN"`
+			AliyunCDN                                                 []string `json:"阿里云 CDN"`
+			AliyunGlobalTrafficManagement                             []string `json:"阿里云全局流量管理"`
+			AliyunDunHighDefense                                      []string `json:"阿里云盾高防"`
+			QueNiuYunCDNAliyun                                        []string `json:"雀牛云CDN 阿里云"`
+			QingCloudCDN []string `json:"青云 CDN"`
+			QingYeYunCDN []string `json:"青叶云 CDN"`
+			LingZhiYunCDNHangzhouLingZhiYunHua []string `json:"领智云 CDN（杭州领智云画）"`
+			ElemeStaticDomainRegionalLoadBalancing []string `json:"饿了么静态域名与地域负载均衡"`
+			GaoShengKongGuCDNTechnology []string `json:"高升控股CDN技术"`
+			MoMenYunCDN []string `json:"魔门云 CDN"`
+		} `json:"common"`
+	}
+
+	// 反序列化
+	var cdnData DataStruct
+	json.Unmarshal([]byte(data), &cdnData)
+
+	// 通过反射获取所有字段的数据
+	// 初始化 CIDR 部分
+	cdnReflectValue := reflect.ValueOf(cdnData.CDN)
+	for i := 0; i < cdnReflectValue.NumField(); i++ {
+		field := cdnReflectValue.Field(i)
+		fieldValue := field.Interface().([]string)
+		CDN_CIDR = append(CDN_CIDR, fieldValue...)
+	}
+	wafReflectValue := reflect.ValueOf(cdnData.WAF)
+	for i := 0; i < wafReflectValue.NumField(); i++ {
+		field := wafReflectValue.Field(i)
+		fieldValue := field.Interface().([]string)
+		CDN_CIDR = append(CDN_CIDR, fieldValue...)
+	}
+
+	// 初始化 CNAME 部分
+	cnameReflectValue := reflect.ValueOf(cdnData.Common)
+	for i := 0; i < cnameReflectValue.NumField(); i++ {
+		field := cnameReflectValue.Field(i)
+		fieldValue := field.Interface().([]string)
+		ALL_CNAME = append(ALL_CNAME, fieldValue...)
 	}
 }
 
